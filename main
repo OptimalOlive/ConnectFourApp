@@ -1,6 +1,6 @@
 import pygame, sys
 import board
-import tensorflow as tf
+import tensorflow.keras.models as tf
 
 if __name__ == '__main__':
 
@@ -21,8 +21,8 @@ if __name__ == '__main__':
     red_model_name = 'model_red_bias_V1_V3_5'
     yellow_model_name = 'model_yellow_bias_V1_V3_5'
     model_name = red_model_name
-    red_model = tf.keras.models.load_model(red_model_path)
-    yellow_model = tf.keras.models.load_model(yellow_model_path)
+    red_model = tf.load_model(red_model_path)
+    yellow_model = tf.load_model(yellow_model_path)
 
     pygame.init()
     pygame.font.init()
