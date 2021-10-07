@@ -1,0 +1,259 @@
+import pygame, sys
+import board
+import tensorflow as tf
+
+if __name__ == '__main__':
+
+    WIDTH = 900
+    HEIGHT = 700
+    LINE_WIDTH = 10
+    RED = (255, 0, 0)
+    YELLOW = (255, 255, 0)
+    GRAY = (180, 180, 180)
+    DARKER_GRAY = (100, 100, 100)
+    BG_COLOR = (255, 255, 255)  # white
+    LINE_COLOR = GRAY
+    CONTOUR_COLOR = DARKER_GRAY
+
+
+    red_model_path = 'C:'    # path of the red model
+    yellow_model_path = 'C:'  # path for the yellow model
+
+    red_model_name = 'model_red_bias_V1_V3_5'
+    yellow_model_name = 'model_yellow_bias_V1_V3_5'
+    model_name = red_model_name
+    red_model = tf.keras.models.load_model(red_model_path)
+    yellow_model = tf.keras.models.load_model(yellow_model_path)
+
+    pygame.init()
+    pygame.font.init()
+    myfont = pygame.font.SysFont('arial', 20)
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption('Connect Four')
+    screen.fill(BG_COLOR)
+
+
+    def draw_board_line():
+
+        pygame.draw.line(screen, LINE_COLOR, (0, 0), (700, 0), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 100), (700, 100), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 200), (700, 200), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 300), (700, 300), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 400), (700, 400), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 500), (700, 500), LINE_WIDTH)
+
+        pygame.draw.line(screen, LINE_COLOR, (0, 0), (0, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (100, 0), (100, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (200, 0), (200, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (300, 0), (300, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (400, 0), (400, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (500, 0), (500, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (600, 0), (600, 600), LINE_WIDTH)
+
+        pygame.draw.line(screen, CONTOUR_COLOR, (700, 0), (700, 700), LINE_WIDTH)
+        pygame.draw.line(screen, CONTOUR_COLOR, (0, 600), (700, 600), LINE_WIDTH)
+
+    def clean_board_display():
+        board_bg = pygame.Rect(0, 0, 700, 600)
+        pygame.draw.rect(screen, 'white', board_bg)
+
+        pygame.draw.line(screen, LINE_COLOR, (0, 0), (700, 0), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 100), (700, 100), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 200), (700, 200), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 300), (700, 300), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 400), (700, 400), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (0, 500), (700, 500), LINE_WIDTH)
+
+        pygame.draw.line(screen, LINE_COLOR, (0, 0), (0, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (100, 0), (100, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (200, 0), (200, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (300, 0), (300, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (400, 0), (400, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (500, 0), (500, 600), LINE_WIDTH)
+        pygame.draw.line(screen, LINE_COLOR, (600, 0), (600, 600), LINE_WIDTH)
+
+        pygame.draw.line(screen, CONTOUR_COLOR, (700, 0), (700, 700), LINE_WIDTH)
+        pygame.draw.line(screen, CONTOUR_COLOR, (0, 600), (700, 600), LINE_WIDTH)
+
+    def draw_board(state):
+        clean_board_display()
+        for player in range(1, 3):
+            for w in range(7):
+                for h in range(6):
+                    x, y = 50 + w * 100, 550 - h * 100
+                    # step = Text(pt, self.current_step)
+                    if state[player - 1][w][h] == 1 and player == 1:
+                        pygame.draw.circle(screen, 'yellow', (x, y), radius=45)
+                    elif state[player - 1][w][h] == 1 and player == 2:
+                        pygame.draw.circle(screen, 'red', (x, y), radius=45)
+        draw_board_line()
+
+    def button(text, position, x_offset):
+        x, y = position
+        BUTTON_WIDTH = 150
+        BUTTON_HEIGHT = 30
+        rect = pygame.Rect(x - (BUTTON_WIDTH / 2), y - (BUTTON_HEIGHT / 2), BUTTON_WIDTH, BUTTON_HEIGHT)
+        pygame.draw.rect(screen, GRAY, rect, width=5)
+        button_text = myfont.render(text, True, (0, 0, 0))
+        screen.blit(button_text, (x - (BUTTON_WIDTH / 2) + x_offset, y - (BUTTON_HEIGHT / 2)))
+        return rect
+
+
+    yellow_button = button('vs yellow', (800, 200), 35)
+    red_button = button('vs red', (800, 300), 45)
+    # draw_button('button 3', (800, 300))
+
+    colonne1 = pygame.Rect(0, 0, 100, 600)
+    colonne2 = pygame.Rect(100, 0, 100, 600)
+    colonne3 = pygame.Rect(200, 0, 100, 600)
+    colonne4 = pygame.Rect(300, 0, 100, 600)
+    colonne5 = pygame.Rect(400, 0, 100, 600)
+    colonne6 = pygame.Rect(500, 0, 100, 600)
+    colonne7 = pygame.Rect(600, 0, 100, 600)
+
+
+    def mouse_board_interaction():
+
+        clicked = False
+        action = 0
+        draw_board(board.get_state())
+        colonnes = [colonne1, colonne2, colonne3, colonne4, colonne5, colonne6, colonne7]
+        draw_board_line()
+        for idx, colonne in enumerate(colonnes):
+            if colonne.collidepoint(pygame.mouse.get_pos()):
+                pygame.draw.rect(screen, DARKER_GRAY, colonne, width=10)
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    clicked = True
+                    action = idx
+
+                if board.legalMove(idx) and not done:
+                    move_position = board.this_column_move(column=idx)
+                    x, y = 50 + idx * 100, 550 - move_position * 100
+                    pygame.draw.circle(screen, DARKER_GRAY, (x, y), radius=46, width=3)
+
+        return (clicked, action)
+
+    def mouse_button_interaction():
+        buttons = [yellow_button, red_button]
+        clicked = False
+        action = 'yellow'
+        for idx, button in enumerate(buttons):
+            pygame.draw.rect(screen, GRAY, button, width=5)
+            if button.collidepoint(pygame.mouse.get_pos()):
+                pygame.draw.rect(screen, DARKER_GRAY, button, width=5)
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    clicked = True
+                    action = idx
+        return (clicked, action)
+
+    def draw_last_move(column, color):
+        move_position = board.this_column_move(column)
+        x, y = 50 + column * 100, 650 - move_position * 100
+        pygame.draw.circle(screen, color, (x, y), radius=45)
+
+    def draw_prediction(evaluation,model_name):
+        prediction_surface = pygame.Rect(0,605,695,95)
+        pygame.draw.rect(screen,'white',prediction_surface)
+
+        # display model name
+        #text_model_name = myfont.render(model_name,True,(0,0,0))
+        #screen.blit(text_model_name,(5,605))
+
+        info_text = myfont.render('model confidence :', True, (0, 0, 0))
+        screen.blit(info_text,(100,638))
+
+        prediction_rect = pygame.Rect(300, 620, 100, 60)
+        pygame.draw.rect(screen, GRAY, prediction_rect, width=5)
+        button_text = myfont.render(str(int(evaluation*100)),True,(0,0,0))
+        screen.blit(button_text, (338,638))
+
+    def draw_result(text):
+        prediction_surface = pygame.Rect(0, 605, 695, 95)
+        pygame.draw.rect(screen, 'white', prediction_surface)
+
+        text_to_display = myfont.render(text,True,(0,0,0))
+        screen.blit(text_to_display,(330,638))
+
+    board = board.Board()
+
+    player = 'red'
+    player_num = 2
+
+    AI_plays = 'yellow'
+    AI_player_num = 1
+
+    player_victory = False
+    AI_victory = False
+    draw = False
+    done = False
+    evaluation = 0
+    to_play = 'yellow'
+    last_board_action = 0
+    result_text = ' '
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+        pygame.display.update()
+
+        (board_action, column) = mouse_board_interaction()
+        (button_action, button) = mouse_button_interaction()
+
+        if button_action:
+            if button == 0:  # button vs yellow pressed
+                board.init_game()
+                player = 'red'
+                player_num = 2
+                AI_plays = 'yellow'
+                AI_player_num = 1
+                model_name = yellow_model_name
+            if button == 1:  # button vs red pressed
+                board.init_game()
+                player = 'yellow'
+                player_num = 1
+                AI_plays = 'red'
+                AI_player_num = 2
+                model_name = red_model_name
+            evaluation = 0
+            to_play = 'yellow'
+            clean_board_display()
+            draw = False
+            player_victory = False
+            AI_victory = False
+            done = False
+
+        if not done:
+            if AI_plays == to_play or board_action:
+                if to_play == 'yellow':
+                    if player == 'yellow' and board_action:
+                        board.play(colonne=column, player=1)
+                    if AI_plays == 'yellow':
+                        evaluation = board.evaluator_play(research_depth=0, evaluator_model=yellow_model, player=1)
+                    #draw_last_move(column=board.get_last_board_action(), color=to_play)
+                    to_play = 'red'
+
+                else:
+                    if player == 'red' and board_action:
+                        board.play(colonne=column, player=2)
+                    if AI_plays == 'red':
+                        evaluation = board.evaluator_play(research_depth=0, evaluator_model=red_model, player=2)
+                    #draw_last_move(column=board.get_last_board_action(), color=to_play)
+                    to_play = 'yellow'
+        if board.won(player=player_num):
+            player_victory = True
+            done = True
+            result_text = 'WON !'
+        if board.won(player=AI_player_num):
+            AI_victory = True
+            done = True
+            result_text = 'LOST ! '
+        if board.draw() and not done:
+            draw = True
+            done = True
+            result_text = 'DRAW ! '
+
+        if done:
+            draw_result(result_text)
+        else:
+            draw_prediction(evaluation, model_name)
