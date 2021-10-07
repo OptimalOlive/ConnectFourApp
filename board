@@ -1,0 +1,112 @@
+import numpy as np
+import tensorflow as tf
+
+class Board():
+
+    def __init__(self):
+
+        self.width = 7
+        self.height = 6
+
+        self.s = (2, self.width, self.height)
+        self.state = np.zeros(self.s).astype(np.int8)
+        self.steps = 0
+        self.last_board_action = 0
+        
+    def get_state(self):
+        return self.state
+    
+    def init_game(self):
+        self.s = (2, self.width, self.height)
+        self.state = np.zeros(self.s).astype(np.int8)
+        self.steps = 0
+
+    def legalMove(self, colonne):
+        combined_state = self.state[0] + 2 * self.state[1]
+        return combined_state[colonne][6 - 1] == 0
+    
+    def this_column_move(self,column):
+        combined_state = self.state[0] + 2 * self.state[1]
+        column = combined_state[column]
+        for idx  in range(0,8) :
+            if column[idx] == 0:
+                return idx
+
+    def phantom_play(self, colonne, player):
+        state_copy = self.state.copy()
+        played = False
+        combined_state = state_copy[0] + 2 * state_copy[1]
+        if combined_state[colonne][self.height - 1] != 0:
+            return state_copy
+        for h in range(len(combined_state[colonne])):
+            if combined_state[colonne][h] == 0 and played == False:
+                state_copy[player - 1][colonne][h] = 1
+                played = True
+        return state_copy
+
+    def evaluator_play(self, evaluator_model, research_depth, player):
+        research_depth = 0
+        evaluation_playlist = [0, 1, 2, 3, 4, 5, 6]
+        evaluation_list = [0, 0, 0, 0, 0, 0, 0]
+        for plays in evaluation_playlist:
+            state = self.phantom_play(plays, player).copy()
+            evaluation_list[plays] = evaluator_model.predict(state.reshape(1, 1, 2, 7, 6))
+        action = np.argmax(evaluation_list)
+        while self.legalMove(action) == False:
+            evaluation_list[action] = 0
+            action = np.argmax(evaluation_list)
+        self.play(action,player)
+        return evaluator_model.predict(self.state.reshape(1, 1, 2, 7, 6))
+
+    def won(self, player):
+        player = player-1
+        for h in range(self.height):
+            for w in range(self.width - 3):
+                if self.state[player][w][h] == 1 and self.state[player][w + 1][h] == 1 and self.state[player][w + 2][
+                    h] == 1 and \
+                        self.state[player][w + 3][h] == 1:
+                    return True
+        for w in range(self.width):
+            for h in range(self.height - 3):
+                if self.state[player][w][h] == 1 and self.state[player][w][h + 1] == 1 and self.state[player][w][
+                    h + 2] == 1 and \
+                        self.state[player][w][h + 3] == 1:
+                    return True
+        for w in range(self.width - 3):
+            for h in range(self.height - 3):
+                if self.state[player][w][h] == 1 and self.state[player][w + 1][h + 1] == 1 and \
+                        self.state[player][w + 2][h + 2] == 1 and \
+                        self.state[player][w + 3][h + 3] == 1:
+                    return True
+        for w in range(self.width - 3):
+            for h in range(self.height - 1, 2, -1):
+                if self.state[player][w][h] == 1 and self.state[player][w + 1][h - 1] == 1 and \
+                        self.state[player][w + 2][
+                            h - 2] == 1 and \
+                        self.state[player][w + 3][h - 3] == 1:
+                    return True
+        return False
+
+    def play(self, colonne, player):
+        played = False
+        combined_state = self.state[0] + 2 * self.state[1]
+        if combined_state[colonne][self.height - 1] != 0:
+            return False
+        for h in range(len(combined_state[colonne])):
+            if combined_state[colonne][h] == 0 and played == False:
+                self.state[player - 1][colonne][h] = 1
+                played = True
+        self.last_board_action = colonne
+        return True
+    
+    def get_last_board_action(self):
+        return self.last_board_action
+    
+    def draw(self):
+        if self.steps < 6:
+            return False
+        for w in range(self.width):
+            if self.legalMove(w) == True:
+                return False
+        return True
+
