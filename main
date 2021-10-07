@@ -4,6 +4,9 @@ import tensorflow as tf
 
 if __name__ == '__main__':
 
+    red_model_path = 'C:'    # path of the red model
+    yellow_model_path = 'C:'  # path for the yellow model
+
     WIDTH = 900
     HEIGHT = 700
     LINE_WIDTH = 10
@@ -14,10 +17,6 @@ if __name__ == '__main__':
     BG_COLOR = (255, 255, 255)  # white
     LINE_COLOR = GRAY
     CONTOUR_COLOR = DARKER_GRAY
-
-
-    red_model_path = 'C:'    # path of the red model
-    yellow_model_path = 'C:'  # path for the yellow model
 
     red_model_name = 'model_red_bias_V1_V3_5'
     yellow_model_name = 'model_yellow_bias_V1_V3_5'
